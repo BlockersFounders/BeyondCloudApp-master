@@ -1,12 +1,16 @@
 package edu.skku.edu.jungsunwoung.memorial_test;
 
 import android.content.Intent;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.samsung.android.sdk.blockchain.CoinType;
 import com.samsung.android.sdk.blockchain.ListenableFutureTask;
@@ -27,6 +31,7 @@ import org.web3j.abi.datatypes.Function;
 import org.web3j.abi.datatypes.Type;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -35,51 +40,33 @@ public class printPage extends AppCompatActivity {
     private HardwareWallet wallet;
     Button printBtn;
     TextView text;
-
+    ListView mListView;
+    ArrayList<String> data;
+    ArrayAdapter adapter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_print_page);
 
         Intent intent=getIntent();
-
+        printBtn=findViewById(R.id.print);
         sBlockchain = new SBlockchain();
+        text=findViewById(R.id.textView);
         try {
             sBlockchain.initialize(this);
         } catch (SsdkUnsupportedException e) {
             e.printStackTrace();
         }
-        text=findViewById(R.id.textView1);
-
-        printBtn=findViewById(R.id.print);
-
-
+        connect();
         printBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sBlockchain.getHardwareWalletManager()
-                        .connect(HardwareWalletType.SAMSUNG,true)
-                        .setCallback(new ListenableFutureTask.Callback<HardwareWallet>() {
-                            @Override
-                            public void onSuccess(HardwareWallet hardwareWallet) {
-                                wallet = hardwareWallet;
-                                Log.d("hi","hi");
-                                print();
-                            }
-
-                            @Override
-                            public void onFailure(ExecutionException e) {
-
-                            }
-
-                            @Override
-                            public void onCancelled(InterruptedException e) {
-
-                            }
-                        });
-
+                mListView = findViewById(R.id. listView );
+                adapter =new ArrayAdapter<String>(printPage.this, android.R.layout. simple_list_item_1 , data);
+                mListView.setAdapter(adapter);
             }
         });
+
     }
     //블록에 기록된 값을 화면에 띄워주는 함수
     //이 함수의 목적은 블록에 가장 마지막에 저장되어 있는 값을 불러온다. 나중에 수정을 한다면 블록에 있는 모든 값을 띄워주는 것으로 바꿀수도 있다.->추후 업데이트?
@@ -104,9 +91,8 @@ public class printPage extends AppCompatActivity {
                 .setCallback(new ListenableFutureTask.Callback<String>() {
                     @Override
                     public void onSuccess(String result) {
-                        //result는 hex형식의 string 값이다
 
-                        Log.d("tet", result);
+                        data = new ArrayList<>();
                         Function functionGetPost = FunctionUtils.countBlock();
                         List<TypeReference<Type>> outputParameters = functionGetPost.getOutputParameters();
                         List<Type> types = FunctionReturnDecoder.decode(result, outputParameters);
@@ -114,19 +100,13 @@ public class printPage extends AppCompatActivity {
                         BigInteger post = (BigInteger) type.getValue();
                         int length = post.intValue() - 1;
 
-                        //-1하는 이유는 데이터 array는 0부터 시작하기 때문이다. 마지막 값을 불러오려면 data[length-1]하는 원리랑 같다
-                        String to = Integer.toString(length);
-                        Log.d("this", to);
-
-                        //여기서 callsmartcontractfunction을 한번 더 불러준다. 위에서 길이를 받아와서 그 길이를 input (int) 값으로 넣어준다.
                         for (int i = 0; i < length; i++) {
-                            String index=Integer.toString(i);
+                            String to = Integer.toString(i);
                             ethereumService
-
                                     .callSmartContractFunction(
                                             (EthereumAccount) accounts.get(0),
                                             "0x07d55a62b487d61a0b47c2937016f68e4bcec0e9",
-                                            "0x9507d39a000000000000000000000000000000000000000000000000000000000000000" + index
+                                            "0x9507d39a000000000000000000000000000000000000000000000000000000000000000" + to
                                             //to값은 위에 길이를 string으로 변환한 것이다. 우선은 블록에 10개 이상이 저장되어있지는 않기 때문에 임의로 한자리라고 가정하고 했다. 자리수가 늘어나면 0을 하나 없애면 된다
                                     )
                                     .setCallback(new ListenableFutureTask.Callback<String>() {
@@ -140,7 +120,9 @@ public class printPage extends AppCompatActivity {
                                             Log.d("hi", (String) types.get(1).getValue());
                                             Log.d("hi", (String) types.get(2).getValue());
                                             //확인차 log값
-                                            text.append("\n" + (String) types.get(0).getValue() + (String) types.get(1).getValue() + (String) types.get(2).getValue());
+
+                                            data.add((String) types.get(0).getValue() + "\n" + (String) types.get(1).getValue());
+
                                             //textview의 값을 바꾸는 부분.여기서 get(0)은 이름 get(1)은 생몰 get(2)는 유언으로 파싱해서 가져올 수 있다. 일단은 통째로 붙여서 넣었다.
 
                                             //success
@@ -159,17 +141,46 @@ public class printPage extends AppCompatActivity {
 
                             //success
                         }
+                        text.setText("Completed. Please Click the button");
                     }
-                        @Override
-                        public void onFailure (ExecutionException exception){
-                            //failure
-                        }
-                        @Override
-                        public void onCancelled (InterruptedException exception){
-                            //cancelled
-                        }
-
+                    @Override
+                    public void onFailure(ExecutionException exception) {
+                        //failure
+                    }
+                    @Override
+                    public void onCancelled(InterruptedException exception) {
+                        //cancelled
+                    }
                 });
+        //호출부분
+
+
+    }
+
+    private void connect(){
+
+
+        sBlockchain.getHardwareWalletManager()
+                .connect(HardwareWalletType.SAMSUNG,true)
+                .setCallback(new ListenableFutureTask.Callback<HardwareWallet>() {
+                    @Override
+                    public void onSuccess(HardwareWallet hardwareWallet) {
+                        wallet = hardwareWallet;
+                        print();
+                    }
+
+                    @Override
+                    public void onFailure(ExecutionException e) {
+
+                    }
+
+                    @Override
+                    public void onCancelled(InterruptedException e) {
+
+                    }
+                });
+//count 부분
+
         //호출부분
 
 
