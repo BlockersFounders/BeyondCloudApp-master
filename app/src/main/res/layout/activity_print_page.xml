@@ -10,20 +10,20 @@
         android:id="@+id/print"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="217dp"
+        android:layout_marginBottom="256dp"
         android:text="Button"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView" />
+        app:layout_constraintTop_toBottomOf="@+id/textView1" />
 
     <TextView
-        android:id="@+id/textView"
-        android:layout_width="174dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="122dp"
-        android:layout_marginBottom="164dp"
-        android:text="TextView"
+        android:id="@+id/textView1"
+        android:layout_width="255dp"
+        android:layout_height="368dp"
+        android:layout_marginTop="161dp"
+        android:layout_marginBottom="204dp"
+        android:text="List"
         app:layout_constraintBottom_toTopOf="@+id/print"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

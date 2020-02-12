@@ -49,7 +49,7 @@ public class printPage extends AppCompatActivity {
         } catch (SsdkUnsupportedException e) {
             e.printStackTrace();
         }
-        text=findViewById(R.id.textView);
+        text=findViewById(R.id.textView1);
 
         printBtn=findViewById(R.id.print);
 
@@ -106,62 +106,69 @@ public class printPage extends AppCompatActivity {
                     public void onSuccess(String result) {
                         //result는 hex형식의 string 값이다
 
-                        Log.d("tet",result);
+                        Log.d("tet", result);
                         Function functionGetPost = FunctionUtils.countBlock();
                         List<TypeReference<Type>> outputParameters = functionGetPost.getOutputParameters();
                         List<Type> types = FunctionReturnDecoder.decode(result, outputParameters);
                         Type type = types.get(0);
                         BigInteger post = (BigInteger) type.getValue();
-                        int length=post.intValue()-1;
+                        int length = post.intValue() - 1;
+
                         //-1하는 이유는 데이터 array는 0부터 시작하기 때문이다. 마지막 값을 불러오려면 data[length-1]하는 원리랑 같다
                         String to = Integer.toString(length);
-                        Log.d("this",to);
+                        Log.d("this", to);
 
                         //여기서 callsmartcontractfunction을 한번 더 불러준다. 위에서 길이를 받아와서 그 길이를 input (int) 값으로 넣어준다.
-                        ethereumService
+                        for (int i = 0; i < length; i++) {
+                            String index=Integer.toString(i);
+                            ethereumService
 
-                                .callSmartContractFunction(
-                                        (EthereumAccount) accounts.get(0),
-                                        "0x07d55a62b487d61a0b47c2937016f68e4bcec0e9",
-                                        "0x9507d39a000000000000000000000000000000000000000000000000000000000000000"+to
-                                        //to값은 위에 길이를 string으로 변환한 것이다. 우선은 블록에 10개 이상이 저장되어있지는 않기 때문에 임의로 한자리라고 가정하고 했다. 자리수가 늘어나면 0을 하나 없애면 된다
-                                )
-                                .setCallback(new ListenableFutureTask.Callback<String>() {
-                                    @Override
-                                    public void onSuccess(String result) {
-                                        Log.d("hello",result);
-                                        Function functionGetPost = FunctionUtils.callBlock(length);
-                                        List<TypeReference<Type>> outputParameters = functionGetPost.getOutputParameters();
-                                        List<Type> types = FunctionReturnDecoder.decode(result, outputParameters);
-                                        Log.d("hi",(String)types.get(0).getValue());
-                                        Log.d("hi",(String)types.get(1).getValue());
-                                        Log.d("hi",(String)types.get(2).getValue());
-                                        //확인차 log값
-                                        text.setText((String)types.get(0).getValue()+(String)types.get(1).getValue()+(String)types.get(2).getValue());
-                                        //textview의 값을 바꾸는 부분.여기서 get(0)은 이름 get(1)은 생몰 get(2)는 유언으로 파싱해서 가져올 수 있다. 일단은 통째로 붙여서 넣었다.
+                                    .callSmartContractFunction(
+                                            (EthereumAccount) accounts.get(0),
+                                            "0x07d55a62b487d61a0b47c2937016f68e4bcec0e9",
+                                            "0x9507d39a000000000000000000000000000000000000000000000000000000000000000" + index
+                                            //to값은 위에 길이를 string으로 변환한 것이다. 우선은 블록에 10개 이상이 저장되어있지는 않기 때문에 임의로 한자리라고 가정하고 했다. 자리수가 늘어나면 0을 하나 없애면 된다
+                                    )
+                                    .setCallback(new ListenableFutureTask.Callback<String>() {
+                                        @Override
+                                        public void onSuccess(String result) {
+                                            Log.d("hello", result);
+                                            Function functionGetPost = FunctionUtils.callBlock(length);
+                                            List<TypeReference<Type>> outputParameters = functionGetPost.getOutputParameters();
+                                            List<Type> types = FunctionReturnDecoder.decode(result, outputParameters);
+                                            Log.d("hi", (String) types.get(0).getValue());
+                                            Log.d("hi", (String) types.get(1).getValue());
+                                            Log.d("hi", (String) types.get(2).getValue());
+                                            //확인차 log값
+                                            text.append("\n" + (String) types.get(0).getValue() + (String) types.get(1).getValue() + (String) types.get(2).getValue());
+                                            //textview의 값을 바꾸는 부분.여기서 get(0)은 이름 get(1)은 생몰 get(2)는 유언으로 파싱해서 가져올 수 있다. 일단은 통째로 붙여서 넣었다.
 
-                                        //success
-                                    }
-                                    @Override
-                                    public void onFailure(ExecutionException exception) {
-                                        //failure
-                                    }
-                                    @Override
-                                    public void onCancelled(InterruptedException exception) {
-                                        //cancelled
-                                    }
-                                });
+                                            //success
+                                        }
 
-                        //success
+                                        @Override
+                                        public void onFailure(ExecutionException exception) {
+                                            //failure
+                                        }
+
+                                        @Override
+                                        public void onCancelled(InterruptedException exception) {
+                                            //cancelled
+                                        }
+                                    });
+
+                            //success
+                        }
                     }
-                    @Override
-                    public void onFailure(ExecutionException exception) {
-                        //failure
-                    }
-                    @Override
-                    public void onCancelled(InterruptedException exception) {
-                        //cancelled
-                    }
+                        @Override
+                        public void onFailure (ExecutionException exception){
+                            //failure
+                        }
+                        @Override
+                        public void onCancelled (InterruptedException exception){
+                            //cancelled
+                        }
+
                 });
         //호출부분
 
