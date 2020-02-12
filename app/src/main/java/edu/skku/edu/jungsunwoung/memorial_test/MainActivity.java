@@ -62,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
     Button webViewInitBtn;
     Button saveBtn;
     Button printBtn;
+    Button nextBtn;
 
     TextView show;
     EditText input;
@@ -94,7 +95,15 @@ public class MainActivity extends AppCompatActivity {
 
         saveBtn=findViewById(R.id.saveBtn);
         printBtn=findViewById(R.id.printBtn);
+        nextBtn=findViewById(R.id.Next);
 
+        nextBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent=new Intent(getApplicationContext(),printPage.class);
+                startActivity(intent);
+            }
+        });
         saveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

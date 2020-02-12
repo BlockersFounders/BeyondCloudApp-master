@@ -61,7 +61,13 @@
     <TextView
         android:id="@+id/show_result"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="305dp"
         android:text="TextView" />
+
+    <Button
+        android:id="@+id/Next"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Nextpage" />
 
 </LinearLayout>

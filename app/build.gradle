@@ -31,7 +31,7 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     implementation 'org.web3j:core:4.1.1'
     repositories {
-        flatDir{
+        flatDir {
             dirs 'libs'
         }
     }
